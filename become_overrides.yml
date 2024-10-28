@@ -1,0 +1,19 @@
+# ---
+# SLAM_TASKNAME: Test for become overrides from raffia
+# SLAM_Q: play
+# ---
+---
+
+- name: Tests for become overides
+  hosts: "{{ NODE }}"
+  tasks:
+    - name: task become defaults
+      shell: id
+
+    - name: task become no
+      shell: id
+      become: no
+
+    - name: task become yes
+      shell: id
+      become: yes

@@ -1,0 +1,18 @@
+# ---
+# SLAM_TASKNAME: Play two playbooks 2
+# SLAM_Q: play
+# SLAM_FF_COMMAND:
+#   type: Text
+#   required: true
+#   prompt: Enter command to run
+# ---
+---
+- hosts: "{{ NODE }}"
+  tasks:
+    - debug: msg="PLAYBOOK={{ PLAYBOOK }}"
+
+- name: Run command 1
+  import_playbook: cmd.yml
+
+- name: Run Playbook
+  import_playbook: "{{ PLAYBOOK }}"

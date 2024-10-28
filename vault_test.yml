@@ -1,0 +1,76 @@
+# Test Raffia playbook with hashicorp vault
+
+# ---
+# SLAM_TASKNAME: Vault test 1
+# SLAM_Q: play
+# SLAM_FF_VAULT_SECRET_ID:
+#   type: text
+#   required: true
+#   prompt: Hashicorp Vault Secret_Id for AppRole
+# ---
+
+---
+- hosts: "{{ NODE }}"
+  force_handlers: true
+  gather_facts: false
+  tasks:
+    - name: Get vault addr and role_id from environment
+      set_fact:
+        vault_addr: "{{ lookup('env', 'VAULT_ADDR') }}"
+        vault_role_id: "{{ lookup('env', 'VAULT_ROLE_ID') }}"
+
+    - name: Login to Vault using approle auth method to get token
+      uri:
+        method: POST
+        url: "{{ vault_addr }}/v1/auth/approle/login"
+        body_format: json
+        body:
+          role_id: "{{ vault_role_id }}"
+          secret_id: "{{ VAULT_SECRET_ID }}"
+        validate_certs: no
+      register: login
+
+    - name: Force notify for token revokation
+      command: /bin/true
+      notify:
+        - Revoke token when done
+
+    - name: Extract client token for future api calls
+      set_fact:
+        token: "{{login.json.auth.client_token}}"
+
+    - name: Get test secret 1
+      uri:
+        method: GET
+        url: "{{ vault_addr }}/v1/secret/platformdxc-cva2/raffia/TEST-ONBOARDING"
+        headers:
+          X-Vault-Token: "{{ token }}"
+        validate_certs: no
+      register: sec_1
+
+    - name: Show secret 1
+      debug:
+        var: sec_1
+
+    - name: Get test secret 2
+      uri:
+        method: GET
+        url: "{{ vault_addr }}/v1/kv/data/platformdxc-cva2/raffia/TEST-ONBOARDING"
+        headers:
+          X-Vault-Token: "{{ token }}"
+        validate_certs: no
+      register: sec_2
+
+    - name: Show secret 2
+      debug:
+        var: sec_2
+
+  handlers:
+    - name: Revoke token when done
+      uri:
+        method: POST
+        url: "{{ vault_addr }}/v1/auth/token/revoke-self"
+        headers:
+          X-Vault-Token: "{{ token }}"
+        status_code: 204  # empty body
+        validate_certs: no

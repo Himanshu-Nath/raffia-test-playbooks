@@ -1,0 +1,54 @@
+# ---
+# SLAM_TASKNAME: Test for variables
+# SLAM_Q: play
+# SLAM_FF_variable1:
+#   type: text
+#   required: true
+#   default: testing
+#   prompt: Enter some text
+# SLAM_FF_VARIABLE2:
+#   type: text
+#   required: true
+#   default: testing
+#   prompt: Enter some text
+# ---
+---
+
+- name: Test not local
+  hosts: "{{ NODE }}"
+  tasks:
+    - name: Debug message
+      debug:
+        msg: "VARIABLE2 is {{VARIABLE2}}"
+      ignore_errors: true
+    - name: Debug message
+      debug:
+        msg: "variable1 is {{variable1}}"
+      ignore_errors: true
+
+- name: Test 1
+  hosts: "{{ NODE }}"
+  connection: local
+  tasks:
+    - name: Debug message
+      debug:
+        msg: "variable1 is {{variable1}}"
+      ignore_errors: true
+
+- name: Test 2
+  hosts: "{{ NODE }}"
+  tasks:
+    - name: Debug message
+      local_action:
+        module: debug
+        msg: "variable1 is {{variable1}}"
+      ignore_errors: true
+
+
+- name: Test FAILS
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Debug message
+      debug:
+        msg: "variable1 is {{variable1}}"

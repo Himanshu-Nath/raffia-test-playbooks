@@ -1,0 +1,12 @@
+# Test Raffia task status display scenarios
+
+# ---
+# SLAM_TASKNAME: Status Test Scenarios free strategy
+# SLAM_Q: [ triage, play ]
+# ---
+
+---
+- hosts: "{{ NODE }}"
+  strategy: free
+  tasks:
+    - include: _task_tests.yml
